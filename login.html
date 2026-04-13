@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – OEPS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <style>
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+    }
+    .login-wrapper {
+      width: 100%;
+      max-width: 480px;
+      padding: 1.5rem;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-logo img {
+      height: 70px;
+      width: auto;
+      margin-bottom: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .login-logo h1 { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -.5px; margin: 0; }
+    .login-logo p  { font-size: .85rem; color: var(--text2); margin-top: 5px; }
+
+    /* Role tabs */
+    .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+    .role-tab {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 1rem; border-radius: 12px; border: 2px solid var(--border);
+      background: var(--surface); cursor: pointer; transition: all .2s; position: relative;
+    }
+    .role-tab:hover { border-color: var(--accent); }
+    .role-tab.active-student { border-color: #3b82f6; background: rgba(59,130,246,.08); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+    .role-tab.active-admin   { border-color: #8b5cf6; background: rgba(139,92,246,.08); box-shadow: 0 0 0 3px rgba(139,92,246,.15); }
+    .role-tab .tab-icon  { font-size: 1.8rem; }
+    .role-tab .tab-label { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); }
+    .role-tab.active-student .tab-label { color: #3b82f6; }
+    .role-tab.active-admin   .tab-label { color: #8b5cf6; }
+    .role-tab .tab-desc  { font-size: .75rem; color: var(--text3); text-align: center; }
+    .role-tab .active-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; display: none; }
+    .role-tab.active-student .active-dot { background: #3b82f6; display: block; }
+    .role-tab.active-admin   .active-dot { background: #8b5cf6; display: block; }
+
+    /* Login card */
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.75rem; transition: border-color .3s; }
+    .login-card.mode-student { border-color: rgba(59,130,246,.4); }
+    .login-card.mode-admin   { border-color: rgba(139,92,246,.4); }
+
+    /* Role badge */
+    .role-badge { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; margin-bottom: 1.25rem; font-size: .8rem; font-weight: 600; letter-spacing: .5px; transition: all .3s; }
+    .role-badge.badge-student { background: rgba(59,130,246,.1); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+    .role-badge.badge-admin   { background: rgba(139,92,246,.1); color: #c4b5fd; border: 1px solid rgba(139,92,246,.2); }
+    .role-badge.badge-none    { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .badge-student .badge-dot { background: #3b82f6; }
+    .badge-admin   .badge-dot { background: #8b5cf6; }
+    .badge-none    .badge-dot { background: var(--text3); }
+
+    /* Sign in button */
+    .btn-signin { width: 100%; padding: 13px; border: none; border-radius: 10px; font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all .2s; margin-top: .5rem; }
+    .btn-signin.btn-student { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; }
+    .btn-signin.btn-student:hover { background: linear-gradient(135deg, #1d4ed8, #2563eb); transform: translateY(-1px); }
+    .btn-signin.btn-admin   { background: linear-gradient(135deg, #7c3aed, #8b5cf6); color: white; }
+    .btn-signin.btn-admin:hover   { background: linear-gradient(135deg, #6d28d9, #7c3aed); transform: translateY(-1px); }
+    .btn-signin.btn-default { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; }
+
+    /* Google button */
+    .btn-google {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-family: 'Sora', sans-serif;
+      font-size: .95rem; font-weight: 600; text-decoration: none;
+      transition: all .2s; box-sizing: border-box; margin-top: .75rem;
+    }
+    .btn-google:hover { background: rgba(255,255,255,.07); border-color: #4285F4; }
+
+    /* Divider */
+    .divider { display: flex; align-items: center; gap: 10px; margin: 1rem 0; }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { color: var(--text3); font-size: .8rem; white-space: nowrap; }
+
+    /* Demo box */
+    .demo-box { margin-top: 1.25rem; padding: 1rem; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); font-size: .8rem; }
+    .demo-title { font-weight: 700; color: var(--text2); margin-bottom: .4rem; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+    .demo-row { display: flex; align-items: center; gap: 8px; cursor: pointer; transition: background .15s; border-radius: 4px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .demo-row:last-child { border-bottom: none; }
+    .demo-row:hover { background: rgba(255,255,255,.04); }
+    .demo-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dot-admin   { background: #8b5cf6; }
+    .dot-student { background: #3b82f6; }
+    .demo-role  { font-weight: 600; color: var(--text2); width: 55px; font-size: .78rem; }
+    .demo-cred  { font-family: 'JetBrains Mono', monospace; color: #06b6d4; font-size: .78rem; }
+    .demo-hint  { color: var(--text3); font-size: .72rem; margin-left: auto; }
+
+    .register-link { text-align: center; margin-top: 1.25rem; font-size: .85rem; color: var(--text2); }
+    .register-link a { color: #3b82f6; text-decoration: none; font-weight: 500; }
+    .register-link a:hover { text-decoration: underline; }
+
+    .alert-error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: .85rem; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+
+<div class="login-page">
+  <div class="login-wrapper">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <img src="{{ url_for('static', filename='LOGO_UPTM_no_bg_baru1.png') }}" alt="UPTM Logo" />
+      <h1>SecureProctor</h1>
+      <p>Online Exam Proctoring System</p>
+    </div>
+
+    <!-- Role tabs -->
+    <div class="role-tabs">
+      <div class="role-tab" id="tabStudent" onclick="setRole('student')">
+        <div class="active-dot"></div>
+        <span class="tab-icon">🎓</span>
+        <span class="tab-label">Student</span>
+        <span class="tab-desc">Take your exams</span>
+      </div>
+      <div class="role-tab" id="tabAdmin" onclick="setRole('admin')">
+        <div class="active-dot"></div>
+        <span class="tab-icon">🛡️</span>
+        <span class="tab-label">Admin</span>
+        <span class="tab-desc">Manage the system</span>
+      </div>
+    </div>
+
+    <!-- Login card -->
+    <div class="login-card" id="loginCard">
+
+      {% if error %}
+        <div class="alert-error">{{ error }}</div>
+      {% endif %}
+
+      <!-- Role badge -->
+      <div class="role-badge badge-none" id="roleBadge">
+        <div class="badge-dot"></div>
+        <span id="badgeText">Select your role above to continue</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <input type="hidden" name="role_hint" id="roleHint" value="" />
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-control" type="email" name="email" id="emailInput"
+            placeholder="Enter your email address" autocomplete="email" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-control" type="password" name="password"
+            placeholder="Enter your password" autocomplete="current-password" required />
+        </div>
+
+        <button class="btn-signin btn-default" id="signinBtn" type="submit">
+          Sign In →
+        </button>
+      </form>
+
+      <!-- Google Sign In (students only) -->
+      <div id="googleSection">
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">or continue with</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <a href="/auth/google" class="btn-google">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.8 13.5-4.7l-6.2-5.2C29.5 35.9 26.9 37 24 37c-5.2 0-9.6-2.9-11.2-7.1l-6.5 5C9.8 40 16.4 44 24 44z"/>
+            <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.4 4.3-4.5 5.7l6.2 5.2C40.8 35.7 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/>
+          </svg>
+          Sign in with Google
+        </a>
+        <p style="text-align:center; font-size:.75rem; color:var(--text3); margin-top:.6rem;">
+          🎓 Students only — UPTM email (@student.uptm.edu.my) required
+        </p>
+      </div>
+
+
+    </div>
+
+    <p class="register-link">
+      New student? <a href="{{ url_for('register') }}">Create an account</a>
+    </p>
+
+  </div>
+</div>
+
+<script>
+  function setRole(role) {
+    const tabStudent    = document.getElementById('tabStudent');
+    const tabAdmin      = document.getElementById('tabAdmin');
+    const card          = document.getElementById('loginCard');
+    const badge         = document.getElementById('roleBadge');
+    const badgeText     = document.getElementById('badgeText');
+    const btn           = document.getElementById('signinBtn');
+    const roleHint      = document.getElementById('roleHint');
+    const googleSection = document.getElementById('googleSection');
+
+    tabStudent.className = 'role-tab';
+    tabAdmin.className   = 'role-tab';
+
+    if (role === 'student') {
+      tabStudent.className  = 'role-tab active-student';
+      card.className        = 'login-card mode-student';
+      badge.className       = 'role-badge badge-student';
+      badgeText.textContent = 'Signing in as Student';
+      btn.className         = 'btn-signin btn-student';
+      btn.textContent       = '🎓  Student Sign In  →';
+      roleHint.value        = 'student';
+      googleSection.style.display = 'block';
+    } else {
+      tabAdmin.className    = 'role-tab active-admin';
+      card.className        = 'login-card mode-admin';
+      badge.className       = 'role-badge badge-admin';
+      badgeText.textContent = 'Signing in as Administrator';
+      btn.className         = 'btn-signin btn-admin';
+      btn.textContent       = '🛡️  Admin Sign In  →';
+      roleHint.value        = 'admin';
+      googleSection.style.display = 'none';
+    }
+  }
+
+  function fillCreds(email, password, role) {
+    document.getElementById('emailInput').value = email;
+    document.querySelector('input[name="password"]').value = password;
+    setRole(role);
+  }
+
+  // Auto-detect role from email typing
+  document.getElementById('emailInput').addEventListener('input', function() {
+    const val = this.value.toLowerCase().trim();
+    if (val.includes('admin')) {
+      setRole('admin');
+    } else if (val.length > 0) {
+      setRole('student');
+    }
+  });
+</script>
+
+</body>
+</html>

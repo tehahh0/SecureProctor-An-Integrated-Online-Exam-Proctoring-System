@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Result – {{ es.title }}{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+
+  <!-- Header -->
+  <div class="actions-bar">
+    <div class="page-header" style="margin-bottom: 0;">
+      {% if session.role == 'admin' %}
+        <a href="{{ url_for('admin_monitor') }}" class="btn btn-ghost btn-sm" style="margin-bottom: .5rem;">← Back to Monitor</a>
+      {% else %}
+        <a href="{{ url_for('results') }}" class="btn btn-ghost btn-sm" style="margin-bottom: .5rem;">← Back to Results</a>
+      {% endif %}
+      <h1>{{ es.title }}</h1>
+      <p>Result for <strong>{{ student.full_name }}</strong> — {{ es.end_time | fmt_dt if es.end_time else 'In Progress' }}</p>
+    </div>
+  </div>
+
+  <!-- Score summary cards -->
+  <div class="grid-4" style="margin-bottom: 1.5rem;">
+    <div class="card stat-card">
+      <div class="score-big">{{ score_pct }}%</div>
+      <div class="stat-label">Final Score</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value blue">{{ es.score or 0 }}/{{ es.total_marks or 0 }}</div>
+      <div class="stat-label">Marks</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value {{ 'red' if es.violation_count else 'green' }}">{{ es.violation_count }}</div>
+      <div class="stat-label">Violations</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value {{ 'red' if es.terminated else 'green' }}">
+        {{ 'TERMINATED' if es.terminated else 'COMPLETE' }}
+      </div>
+      <div class="stat-label">Status</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="align-items: start;">
+
+    <!-- Question review -->
+    <div>
+      <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Question Review</h2>
+
+      {% for q in questions %}
+        <div class="card" style="margin-bottom: 1rem;">
+          <div class="q-review-header">
+            <span class="q-review-num">Q{{ loop.index }}</span>
+            {% if q.is_correct %}
+              <span style="color: var(--success); font-weight: 700;">✓ Correct</span>
+            {% elif q.selected_answer %}
+              <span style="color: var(--danger); font-weight: 700;">✗ Wrong</span>
+            {% else %}
+              <span style="color: var(--text3); font-weight: 700;">— Skipped</span>
+            {% endif %}
+          </div>
+
+          <div style="font-weight: 500; margin-bottom: .75rem;">{{ q.question_text }}</div>
+
+          {% for key, val in [('A', q.option_a), ('B', q.option_b), ('C', q.option_c), ('D', q.option_d)] %}
+            {% if val %}
+              <div class="review-option
+                {% if key == q.correct_answer %}opt-correct
+                {% elif key == q.selected_answer and key != q.correct_answer %}opt-wrong
+                {% endif %}">
+                <strong>{{ key }}.</strong> {{ val }}
+                {% if key == q.correct_answer %} ✓{% elif key == q.selected_answer %} ✗{% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Violation log -->
+    <div>
+      <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">
+        Violation Log ({{ violations | length }})
+      </h2>
+
+      {% if violations %}
+        {% for v in violations %}
+          <div class="violation-item">
+            <div class="violation-dot"></div>
+            <div>
+              <strong>{{ v.violation_type.replace('_', ' ').title() }}</strong>
+              – {{ v.description }}<br />
+              <span style="color: var(--text3); font-size: .75rem;">{{ v.timestamp | fmt_dt('%Y-%m-%d %H:%M:%S') }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="card">
+          <p style="color: var(--success);">✓ No violations recorded</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

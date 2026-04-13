@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Manage Admins – OEPS{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+
+  <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h1>Admin Accounts ({{ admins | length }})</h1>
+      <p>Manage all administrator accounts in the system</p>
+    </div>
+    <a href="{{ url_for('create_admin') }}" class="btn btn-primary">+ Create New Admin</a>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Username</th>
+          <th>Joined</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for admin in admins %}
+          <tr>
+            <td>
+              <strong>{{ admin.full_name }}</strong>
+              {% if admin.id == session.user_id %}
+                <span class="badge badge-warning" style="margin-left:6px;">You</span>
+              {% endif %}
+            </td>
+            <td>{{ admin.email or '—' }}</td>
+            <td><span style="font-family:monospace; color:var(--text2);">{{ admin.username }}</span></td>
+            <td>{{ admin.created_at | fmt_dt('%Y-%m-%d') }}</td>
+            <td>
+              {% if admin.id == session.user_id %}
+                <span style="color:var(--text3); font-size:.85rem;">Cannot delete yourself</span>
+              {% else %}
+                <a href="{{ url_for('delete_admin', admin_id=admin.id) }}"
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Delete admin {{ admin.full_name }}? This cannot be undone.')">
+                  Delete
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

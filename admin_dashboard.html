@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – OEPS{% endblock %}
+
+{% block content %}
+<div class="container-wide" style="margin-top: 2rem;">
+
+  <div class="page-header">
+    <h1>Admin Dashboard</h1>
+    <p>System overview and recent activity</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid-4" style="margin-bottom: 1.5rem;">
+    <div class="card stat-card">
+      <div class="stat-value blue">{{ stats.exams }}</div>
+      <div class="stat-label">Total Exams</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value cyan">{{ stats.students }}</div>
+      <div class="stat-label">Students</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value green">{{ stats.completed }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value red">{{ stats.violations }}</div>
+      <div class="stat-label">Violations</div>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('new_exam') }}" class="btn btn-primary">+ New Exam</a>
+    <a href="{{ url_for('admin_exams') }}" class="btn btn-ghost">Manage Exams</a>
+    <a href="{{ url_for('admin_students') }}" class="btn btn-ghost">View Students</a>
+    <a href="{{ url_for('admin_monitor') }}" class="btn btn-ghost">Live Monitor</a>
+  </div>
+
+  <!-- Recent sessions -->
+  <div class="card">
+    <h2 style="font-size: 1rem; margin-bottom: 1rem;">Recent Exam Sessions</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Exam</th>
+          <th>Status</th>
+          <th>Violations</th>
+          <th>Started</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if recent %}
+          {% for r in recent %}
+            <tr>
+              <td><strong>{{ r.full_name }}</strong></td>
+              <td>{{ r.title }}</td>
+              <td>
+                {% if r.terminated %}
+                  <span class="badge badge-danger">Terminated</span>
+                {% elif r.status == 'completed' %}
+                  <span class="badge badge-success">Completed</span>
+                {% else %}
+                  <span class="badge badge-warning">In Progress</span>
+                {% endif %}
+              </td>
+              <td>{{ r.violation_count }}</td>
+              <td>{{ r.start_time | fmt_dt }}</td>
+              <td>
+                <a href="{{ url_for('view_result', session_id=r.id) }}" class="btn btn-ghost btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text3);">No sessions yet</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

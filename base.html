@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}OEPS{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  {% if session.user_id %}
+  <nav class="navbar">
+    <div class="nav-brand">
+      🎓 <span>OEPS</span>
+      {% if session.role == 'admin' %}
+        <span class="nav-badge admin">ADMIN</span>
+      {% else %}
+        <span class="nav-badge">STUDENT</span>
+      {% endif %}
+    </div>
+
+    <div class="nav-links">
+      {% if session.role == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('admin_exams') }}">Exams</a>
+        <a href="{{ url_for('admin_students') }}">Students</a>
+        <a href="{{ url_for('admin_monitor') }}">Monitor</a>
+        <a href="{{ url_for('admin_admins') }}">Admins</a>
+      {% else %}
+        <a href="{{ url_for('dashboard') }}">My Exams</a>
+        <a href="{{ url_for('results') }}">My Results</a>
+      {% endif %}
+      <span class="nav-user">{{ session.full_name }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm">Sign Out</a>
+    </div>
+  </nav>
+  {% endif %}
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

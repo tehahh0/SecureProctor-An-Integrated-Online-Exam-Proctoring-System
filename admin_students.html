@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Students – OEPS{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+
+  <div class="page-header">
+    <h1>Students ({{ students | length }})</h1>
+    <p>All registered student accounts</p>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Exams Taken</th>
+          <th>Total Violations</th>
+          <th>Joined</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if students %}
+          {% for s in students %}
+            <tr>
+              <td>
+                <strong>{{ s.full_name }}</strong><br />
+                <span style="color: var(--text3); font-size: .8rem;">{{ s.username }}</span>
+              </td>
+              <td>{{ s.email or '—' }}</td>
+              <td>{{ s.completed }}</td>
+              <td>
+                {% if s.total_violations %}
+                  <span class="badge badge-danger">{{ s.total_violations }}</span>
+                {% else %}
+                  <span class="badge badge-success">0</span>
+                {% endif %}
+              </td>
+              <td>{{ s.created_at | fmt_dt('%Y-%m-%d') }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text3);">No students registered yet</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

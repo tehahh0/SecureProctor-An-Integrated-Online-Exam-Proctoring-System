@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Live Monitor – OEPS{% endblock %}
+
+{% block head %}
+<!-- Auto-refresh every 30 seconds -->
+<meta http-equiv="refresh" content="30" />
+{% endblock %}
+
+{% block content %}
+<div class="container-wide" style="margin-top: 2rem;">
+
+  <div class="actions-bar">
+    <div class="page-header" style="margin-bottom: 0;">
+      <h1>Live Exam Monitor</h1>
+      <p>All exam sessions — auto-refreshes every 30 seconds</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Exam</th>
+          <th>Started</th>
+          <th>Status</th>
+          <th>Score</th>
+          <th>Violations</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if all_sessions %}
+          {% for s in all_sessions %}
+            {% set pct = ((s.score / s.total_marks) * 100) | round | int if s.total_marks and s.score is not none else none %}
+            <tr>
+              <td>
+                <strong>{{ s.full_name }}</strong><br />
+                <span style="color: var(--text3); font-size: .8rem;">{{ s.username }}</span>
+              </td>
+              <td>{{ s.title }}</td>
+              <td>{{ s.start_time | fmt_dt }}</td>
+              <td>
+                {% if s.terminated %}
+                  <span class="badge badge-danger">Terminated</span>
+                {% elif s.status == 'completed' %}
+                  <span class="badge badge-success">Completed</span>
+                {% else %}
+                  <span class="badge badge-warning">In Progress</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if pct is not none %}
+                  <strong style="color: var(--accent);">{{ pct }}%</strong>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>
+                {% if s.violation_count >= 3 %}
+                  <span class="badge badge-danger">{{ s.violation_count }}</span>
+                {% elif s.violation_count > 0 %}
+                  <span class="badge badge-warning">{{ s.violation_count }}</span>
+                {% else %}
+                  <span class="badge badge-success">0</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('view_result', session_id=s.id) }}" class="btn btn-ghost btn-sm">Details</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text3);">No sessions yet</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

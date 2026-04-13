@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Results – OEPS{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+
+  <div class="page-header">
+    <h1>My Results</h1>
+    <p>Your exam history and scores</p>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Exam</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Score</th>
+          <th>Violations</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+            {% if sessions %}
+            {% for s in sessions %}
+            {% set pct = ((s.score / s.total_marks) * 100) | round | int if s.total_marks else 0 %}
+            <tr>
+              <td><strong>{{ s.title }}</strong></td>
+              <td>{{ s.start_time | fmt_dt }}</td>
+              <td>
+                {% if s.terminated %}
+                  <span class="badge badge-danger">Terminated</span>
+                {% elif s.status == 'completed' %}
+                  <span class="badge badge-success">Completed</span>
+                {% else %}
+                  <span class="badge badge-warning">In Progress</span>
+                {% endif %}
+              </td>
+              <td>
+                <strong style="color: var(--accent);">{{ pct }}%</strong>
+                <span style="color: var(--text3); font-size: .8rem;">({{ s.score or 0 }}/{{ s.total_marks or 0 }})</span>
+              </td>
+              <td>{{ s.violation_count }}</td>
+              <td>
+                <a href="{{ url_for('view_result', session_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text3);">No exam history yet</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

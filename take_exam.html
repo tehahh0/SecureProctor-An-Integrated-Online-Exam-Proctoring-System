@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ exam.title }} – OEPS{% endblock %}
+
+{% block content %}
+<div class="violation-toast" id="vToast"></div>
+
+<div class="container-wide" style="margin-top: 1.5rem;">
+  <div class="exam-layout">
+
+    <!-- LEFT: Question area -->
+    <div>
+      <div class="card question-card">
+        <div class="question-num" id="qNum">Question 1 of {{ question_count }}</div>
+        <div class="question-text" id="qText">Loading question...</div>
+        <div class="options" id="qOptions"></div>
+      </div>
+
+      <div class="exam-nav-bar">
+        <button class="btn btn-ghost" id="prevBtn" onclick="navigate(-1)">← Previous</button>
+        <button class="btn btn-ghost" id="nextBtn" onclick="navigate(1)">Next →</button>
+        <button class="btn btn-success btn-lg" onclick="submitExam()">Submit Exam ✓</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Sidebar -->
+    <div class="sidebar-exam">
+
+      <!-- Timer -->
+      <div class="card" style="margin-bottom: 1rem;">
+        <div class="sidebar-label">Time Remaining</div>
+        <div class="timer-display" id="timer">--:--</div>
+      </div>
+
+      <!-- Question navigator -->
+      <div class="card" style="margin-bottom: 1rem;">
+        <div class="sidebar-label">Questions</div>
+        <div class="q-nav" id="qNav">
+          {% for i in range(question_count) %}
+            <button class="q-nav-btn" id="qbtn-{{ i }}" onclick="goTo({{ i }})">{{ i + 1 }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Webcam -->
+      <div class="card" style="margin-bottom: 1rem;">
+        <div class="sidebar-label">Webcam Monitor</div>
+        <div class="webcam-preview">
+          <video id="webcam" autoplay muted playsinline></video>
+          <div class="webcam-dot"></div>
+        </div>
+      </div>
+
+      <!-- Violations -->
+      <div class="card">
+        <div class="viol-header">
+          <span class="sidebar-label">Violations</span>
+          <span class="badge badge-danger" id="violCount">
+            {{ violations }} / {{ exam.max_violations }}
+          </span>
+        </div>
+        <div id="violList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Pass Python data to JS safely using a data script tag -->
+<script id="examData" type="application/json">
+{
+  "questions":     {{ questions_json | safe }},
+  "sessionId":     {{ session_id }},
+  "examId":        {{ exam.id }},
+  "maxViolations": {{ exam.max_violations }},
+  "remaining":     {{ remaining }},
+  "violations":    {{ violation_count }}
+}
+</script>
+
+<script src="{{ url_for('static', filename='exam.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}My Exams – OEPS{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+
+  <div class="page-header">
+    <h1>Welcome back, {{ session.full_name }} 👋</h1>
+    <p>Here are the exams available for you</p>
+  </div>
+
+  {% if exams %}
+    <div class="grid-2">
+      {% for exam in exams %}
+        {% set es = exam_sessions.get(exam.id) %}
+        <div class="card">
+
+          <div class="card-top">
+            <h3>{{ exam.title }}</h3>
+            {% if es %}
+              {% if es.status == 'completed' and not es.terminated %}
+                {% set pct = ((es.score / es.total_marks) * 100) | round | int if es.total_marks else 0 %}
+                <span class="badge badge-success">✓ Completed – {{ pct }}%</span>
+              {% elif es.terminated %}
+                <span class="badge badge-danger">✗ Terminated</span>
+              {% elif es.status == 'in_progress' %}
+                <span class="badge badge-warning">⟳ In Progress</span>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-gray">Not Started</span>
+            {% endif %}
+          </div>
+
+          <p class="card-desc">{{ exam.description or '' }}</p>
+
+          <div class="card-footer">
+            <span class="card-meta">⏱ {{ exam.duration_minutes }} minutes</span>
+
+            {% if es %}
+              {% if es.status == 'completed' %}
+                <a href="{{ url_for('view_result', session_id=es.id) }}" class="btn btn-ghost btn-sm">View Result</a>
+              {% elif es.status == 'in_progress' and not es.terminated %}
+                <a href="{{ url_for('take_exam', exam_id=exam.id) }}" class="btn btn-warning btn-sm">Continue</a>
+              {% else %}
+                <span class="badge badge-gray">Unavailable</span>
+              {% endif %}
+            {% else %}
+              <a href="{{ url_for('start_exam', exam_id=exam.id) }}" class="btn btn-primary btn-sm">Start Exam</a>
+            {% endif %}
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card empty-state">
+      <p>No active exams at the moment. Check back later!</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
